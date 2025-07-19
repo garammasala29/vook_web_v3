@@ -101,3 +101,4 @@ gem 'omniauth-rails_csrf_protection'
 gem 'pagy'
 gem 'sitemap_generator'
 gem 'whenever', require: false
+gem 'x'
