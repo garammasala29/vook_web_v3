@@ -52,7 +52,7 @@ class MagazinesController < ApplicationController
   private
 
   def set_magazine
-    @magazine = Magazine.find(params[:id])
+    @magazine = Magazine.with_rich_text_body.find(params[:id])
   end
 
   def magazine_params

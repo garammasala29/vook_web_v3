@@ -1,0 +1,72 @@
+<section class='form-section'>
+  <%= render 'shared/errors', object: @brand %>
+  <%= form_with(model: brand, local: true) do |form| %>
+    <div class='field'>
+      <%= form.label :name, class: 'label' %>
+      <div class='control'>
+        <%= form.text_field :name, class: 'input' %>
+      </div>
+    </div>
+
+    <div class='field'>
+      <%= form.label :image, class: 'label' %>
+      <div class='control file has-name'>
+        <label class='file-label'>
+          <%= form.file_field :image, class: 'file-input' %>
+          <span class='file-cta'>
+            <span class='file-icon'>
+              <i class='fas fa-upload'></i>
+            </span>
+            <span class='file-label'>
+              ファイルを選択
+            </span>
+          </span>
+          <span class='file-name'>
+            <%= @brand.image.attached? ? @brand.image.filename.to_s : 'No file uploaded' %>
+          </span>
+        </label>
+      </div>
+    </div>
+
+    <div class='field'>
+      <%= form.label :banner, class: 'label' %>
+      <div id='file-js-example' class='control file has-name'>
+        <label class='file-label'>
+          <%= form.file_field :banner, class: 'file-input' %>
+          <span class='file-cta'>
+            <span class='file-icon'>
+              <i class='fas fa-upload'></i>
+            </span>
+            <span class='file-label'>
+              ファイルを選択
+            </span>
+          </span>
+          <span class='file-name'>
+            <%= @brand.banner.attached? ? @brand.banner.filename.to_s : 'No file uploaded' %>
+          </span>
+        </label>
+      </div>
+    </div>
+
+    <div class='field'>
+      <%= form.label :color, class: 'label' %>
+      <div class='control color-field'>
+        <%= form.color_field :color, class: 'color-picker' %>
+        <span class='color-label'>
+          <%= @brand.color %>
+        </span>
+      </div>
+    </div>
+
+    <div class='field'>
+      <%= form.label :description, class: 'label' %>
+      <div class='control'>
+        <%= form.text_area :description, class: 'textarea' %>
+      </div>
+    </div>
+
+    <div class='buttons is-right'>
+      <%= form.submit class: 'button is-primary' %>
+    </div>
+  <% end %>
+</section>

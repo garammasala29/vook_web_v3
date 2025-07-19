@@ -31,6 +31,14 @@
     max-height: 500px;
     max-width: 800px;
   }
+  .attachment__credit {
+    font-size: 0.8rem;
+    text-align: center;
+    a {
+      color: $blue;
+      text-decoration: underline;
+    }
+  }
 }
 
 trix-editor {

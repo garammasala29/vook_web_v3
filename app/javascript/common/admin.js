@@ -4,6 +4,7 @@ import '../file-preview';
 import '../knowledge-mermaid';
 import '../line-select';
 import '../mention';
+import '../trix-image-listener'
 
 import Trix from 'trix';
 import '@rails/actiontext';

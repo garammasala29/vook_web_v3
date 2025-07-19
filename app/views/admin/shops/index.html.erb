@@ -1,0 +1,47 @@
+<% content_for :stylesheet do %>
+  <%= stylesheet_link_tag 'page/admin' %>
+<% end %>
+
+<section class='admin-section'>
+  <%= render partial: 'shared/section_headline', locals: { title: 'Shop' } %>
+  <div class='admin-container container'>
+    <div class='has-text-right'>
+      <%= link_to 'New shop', new_admin_shop_path, class: 'button is-primary' %>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>名前</th>
+          <th>画像使用箇所</th>
+          <th>操作</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @shops.each do |shop| %>
+          <tr>
+            <td><%= shop.name %></td>
+
+            <td>
+              <% shop.image_credits.each do |credit| %>
+                <% credit.blob.attachments.each do |attachment| %>
+                  <% record = attachment.record %>
+                  <% next unless record.is_a?(Magazine) %> <%# or other models you allow %>
+
+                  <div>
+                    <strong><%= link_to record.title, [:admin, record] %></strong><br>
+                    <%= image_tag credit.blob.representation(resize_to_limit: [100, 100]), style: "margin-top: 4px;" %>
+                  </div>
+                <% end %>
+              <% end %>
+            </td>
+
+            <td>
+              <%= link_to "編集", edit_admin_shop_path(shop) %> |
+              <%= link_to "削除", admin_shop_path(shop), method: :delete, data: { confirm: "本当に削除しますか？" } %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+</section>
