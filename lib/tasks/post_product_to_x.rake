@@ -1,10 +1,12 @@
 namespace :product do
   desc 'Post a random product to X with AI-generated recommendation'
   task post_product_to_x: :environment do
+    log = ->(msg) { puts "[X Bot] [#{Time.current.strftime('%Y-%m-%d %H:%M:%S')}] #{msg}" }
+
     product = Product.includes(knowledge: %i[brand item line]).order('RAND()').first
 
     unless product
-      puts '[X Bot] No product found.'
+      log.call('No product found.')
       next
     end
 
@@ -30,7 +32,7 @@ namespace :product do
     post_text = generate_post_text(product_info, price, product.url)
 
     unless post_text
-      puts '[X Bot] AI生成に失敗したため投稿をスキップします。'
+      log.call('AI生成に失敗したため投稿をスキップします。')
       next
     end
 
@@ -44,10 +46,10 @@ namespace :product do
       x_client = X::Client.new(**x_credentials)
 
       x_client.post('tweets', { text: post_text }.to_json)
-      puts "[X Bot] 投稿完了: #{product.name}"
-      puts "[X Bot] 投稿内容:\n#{post_text}"
+      log.call("投稿完了: #{product.name}")
+      log.call("投稿内容:\n#{post_text}")
     rescue StandardError => e
-      puts "[X Bot] 投稿失敗: #{e.message}"
+      log.call("投稿失敗: #{e.message}")
     end
   end
 
@@ -64,16 +66,25 @@ namespace :product do
       あなたはヴィンテージ古着の専門バイヤーです。
       以下の商品情報をもとに、Xへの投稿文を作成してください。
 
-      【ルール】
+      【絶対に守るルール】
+      - 商品情報に書かれた「アイテム」の種別を正確に使うこと。Denim Pantsならパンツ/デニム、Jacketならジャケットと書く。勝手にアイテム種別を変えない
+      - 商品情報に書かれていない事実を創作しない。年代、ブランド、モデル名はそのまま使う
+
+      【文章のルール】
       - 商品の魅力やストーリーを伝え、購買意欲を刺激する文章にする
       - 年代やモデルの希少性、歴史的価値に触れる
       - 感情に訴えかける表現を使う（「今しか手に入らない」「一期一会」など）
       - 文章の最後に必ず以下の2行を改行して入れる:
         #{price}
         #{url}
+
+      【ハッシュタグのルール】
       - ハッシュタグは文章の末尾に3〜5個つける
-      - ハッシュタグはクリックされやすいものを選ぶ（例: #古着好きと繋がりたい #ヴィンテージ古着 #古着コーデ #古着男子 #古着女子 など、トレンド性のあるもの）
+      - 数字だけのハッシュタグは禁止（例: #559 はNG。#Levis559 のようにブランド名と組み合わせる）
+      - ハッシュタグはクリックされやすいものを選ぶ（例: #古着好きと繋がりたい #ヴィンテージ古着 #古着コーデ #古着男子 #古着女子 など）
       - ブランド名やモデル名のハッシュタグも含める
+
+      【フォーマットのルール】
       - 投稿全体（文章+価格+URL+ハッシュタグ）を280文字以内に収める
       - 絵文字は使わない
       - 装飾記号（【】や■など）は最小限にする
@@ -89,7 +100,7 @@ namespace :product do
 
     result.map { |r| r.dig('candidates', 0, 'content', 'parts', 0, 'text') }.join
   rescue StandardError => e
-    puts "[X Bot] AI生成失敗: #{e.message}"
+    Rails.logger.error("[X Bot] AI生成失敗: #{e.message}")
     nil
   end
 end
