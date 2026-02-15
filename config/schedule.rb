@@ -7,6 +7,8 @@ every 1.day, at: '1:00 am' do
   rake 'analytics:fetch_page_views'
 end
 
-every 1.hour, at: 10 do
-  rake 'product:post_product_to_x'
+%w[7:00 8:00 12:00 12:30 18:00 19:00 21:00 22:00].each do |time|
+  every 1.day, at: time do
+    rake 'product:post_product_to_x'
+  end
 end
