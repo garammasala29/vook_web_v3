@@ -137,12 +137,15 @@ GEM
       rubocop (>= 1)
       smart_properties
     erubi (1.13.1)
+    ethon (0.15.0)
+      ffi (>= 1.15.0)
+    event_stream_parser (1.0.0)
     factory_bot (6.5.0)
       activesupport (>= 5.0.0)
     factory_bot_rails (6.4.4)
       factory_bot (~> 6.5)
       railties (>= 5.0.0)
-    faraday (2.13.1)
+    faraday (2.14.1)
       faraday-net_http (>= 2.0, < 3.5)
       json
       logger
@@ -150,6 +153,9 @@ GEM
       net-http (>= 0.5.0)
     faraday-retry (2.3.1)
       faraday (~> 2.0)
+    faraday-typhoeus (1.1.0)
+      faraday (~> 2.0)
+      typhoeus (~> 1.4)
     ffi (1.17.1)
     ffi (1.17.1-arm64-darwin)
     ffi (1.17.1-x86_64-linux-gnu)
@@ -163,6 +169,12 @@ GEM
       googleapis-common-protos-types (~> 1.15)
       googleauth (~> 1.12)
       grpc (~> 1.66)
+    gemini-ai (4.3.0)
+      event_stream_parser (~> 1.0)
+      faraday (~> 2.13, >= 2.13.2)
+      faraday-typhoeus (~> 1.1)
+      googleauth (~> 1.8)
+      typhoeus (~> 1.4, >= 1.4.1)
     globalid (1.2.1)
       activesupport (>= 6.1)
     google-analytics-data-v1beta (0.16.1)
@@ -467,6 +479,8 @@ GEM
     turbo-rails (2.0.13)
       actionpack (>= 7.1.0)
       railties (>= 7.1.0)
+    typhoeus (1.5.0)
+      ethon (>= 0.9.0, < 0.16.0)
     tzinfo (2.0.6)
       concurrent-ruby (~> 1.0)
     unicode-display_width (3.1.4)
@@ -511,6 +525,7 @@ DEPENDENCIES
   enum_help
   erb_lint
   factory_bot_rails
+  gemini-ai
   google-analytics-data-v1beta
   hotwire-livereload
   htmlbeautifier
