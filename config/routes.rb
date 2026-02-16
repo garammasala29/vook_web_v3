@@ -29,6 +29,7 @@ Rails.application.routes.draw do
   get '/admin', to: 'admin#show'
   namespace :admin do
     resources :magazines, only: [:index], path: '/magazine'
+    resources :shops, only: %i[index new create edit update destroy]
   end
 
   namespace :api, defaults: { format: :json } do
@@ -37,6 +38,8 @@ Rails.application.routes.draw do
     resources :magazines, only: %i[index], path: '/magazine'
     resources :products, only: [:show]
     resources :tags, only: [:index]
+    resources :shops, only: [:index]
+    resources :image_credits, only: [:create]
   end
 
   match '*path', to: 'application#routing_error', via: :all, constraints: lambda { |req|

@@ -2,9 +2,9 @@
   <% if blob.representable? %>
     <%= image_tag blob.representation(resize_to_limit: local_assigns[:in_gallery] ? [800, 600] : [1024, 768]) %>
   <% end %>
-  <figcaption class="attachment__caption">
-    <% if caption = blob.try(:caption) %>
-      <%= caption %>
-    <% end %>
-  </figcaption>
+  <% if credit = ImageCredit.find_by(blob_id: blob.id) %>
+    <div class="attachment__credit">
+      image_by <%= link_to credit.shop.name, credit.source_url.presence || '' %>
+    </div>
+  <% end %>
 </figure>
