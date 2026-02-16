@@ -1,22 +1,30 @@
 POST_TONE_VARIATIONS = [
-  '語りかけるような親しみやすいトーンで書いてください。友達に「これ見て！」と勧める感じで。',
-  '淡々としたクールなトーンで書いてください。事実と数字で魅力を伝える硬派なスタイルで。',
-  '情熱的な古着バイヤーのトーンで書いてください。商品への愛が伝わる熱い文章で。',
-  'ストーリーテリング風に書いてください。この服が歩んできた歴史や時代背景を短く語る形で。',
-  '問いかけ形式で書いてください。「〜を知っていますか？」「〜を探していませんか？」のように読者に語りかける形で。'
+  'バイヤー目線で「自分ならこう着る」「こういう人に刺さる」という提案を交えて書いてください。',
+  '鑑定士のように、このモデル特有のディテールや見分けポイントを語りつつ魅力を伝えてください。',
+  '古着市場の相場観を踏まえて、この価格がいかにお得か、あるいは妥当かをプロの視点で伝えてください。',
+  'このアイテムが生まれた時代背景やカルチャーとの関係を短く語り、歴史的な文脈で魅力を伝えてください。',
+  '「なぜ今このモデルが再評価されているのか」というトレンドの文脈で、プロの知見を交えて書いてください。'
 ].freeze
+
+# XではURLが自動的にt.co短縮（23文字）されるため、実際の文字数を計算する
+X_URL_LENGTH = 23
 
 namespace :product do
   desc 'Post a random product to X with AI-generated recommendation'
   task post_product_to_x: :environment do
     log = ->(msg) { puts "[X Bot] [#{Time.current.strftime('%Y-%m-%d %H:%M:%S')}] #{msg}" }
 
-    product = Product.includes(knowledge: %i[brand item line]).order('RAND()').first
+    posted_ids = Rails.cache.fetch('x_bot:posted_product_ids') { [] }
+    product = Product.includes(knowledge: %i[brand item line]).where.not(id: posted_ids).order('RAND()').first
+    product ||= Product.includes(knowledge: %i[brand item line]).order('RAND()').first
 
     unless product
       log.call('No product found.')
       next
     end
+
+    posted_ids = (posted_ids + [product.id]).last(50)
+    Rails.cache.write('x_bot:posted_product_ids', posted_ids)
 
     knowledge = product.knowledge
     brand = knowledge.brand
@@ -44,8 +52,9 @@ namespace :product do
       next
     end
 
-    if post_text.length > 280
-      log.call("文字数オーバー(#{post_text.length}文字)のため投稿をスキップします。")
+    x_char_count = post_text.gsub(%r{https?://\S+}, 'x' * X_URL_LENGTH).length
+    if x_char_count > 280
+      log.call("文字数オーバー(X換算#{x_char_count}文字)のため投稿をスキップします。")
       log.call("生成内容:\n#{post_text}")
       next
     end
@@ -62,8 +71,11 @@ namespace :product do
       x_client.post('tweets', { text: post_text }.to_json)
       log.call("投稿完了: #{product.name}")
       log.call("投稿内容:\n#{post_text}")
+    rescue X::Forbidden => e
+      log.call("投稿拒否(Forbidden): #{e.message}")
+      log.call("投稿しようとした内容(X換算#{x_char_count}文字):\n#{post_text}")
     rescue StandardError => e
-      log.call("投稿失敗: #{e.message}")
+      log.call("投稿失敗: #{e.class} #{e.message}")
     end
   end
 
@@ -79,8 +91,8 @@ namespace :product do
     tone = POST_TONE_VARIATIONS.sample
 
     prompt = <<~PROMPT
-      あなたはヴィンテージ古着の専門バイヤーです。
-      以下の商品情報をもとに、Xへの投稿文を作成してください。
+      あなたはヴィンテージ古着歴20年の専門バイヤーです。
+      何千着もの古着を見てきた経験と知識に基づき、以下の商品をXで紹介してください。
 
       【トーン指定】
       #{tone}
@@ -89,11 +101,11 @@ namespace :product do
       - 商品情報に書かれた「アイテム」の種別を正確に使うこと。Denim Pantsならパンツ/デニム、Jacketならジャケットと書く。勝手にアイテム種別を変えない
       - 商品情報に書かれていない事実を創作しない。年代、ブランド、モデル名はそのまま使う
       - 以下の表現は使用禁止。必ず別の言い回しにする:
-        「一期一会」「お見逃しなく」「見逃し厳禁」「希少な逸品」「奇跡の入荷」
+        「一期一会」「お見逃しなく」「見逃し厳禁」「希少な逸品」「奇跡の入荷」「歴史を纏う」
 
       【文章のルール】
-      - 商品の魅力やストーリーを伝え、購買意欲を刺激する文章にする
-      - 年代やモデルの特徴、歴史的価値に触れる
+      - プロのバイヤーとしての知見・経験が感じられる文章にする
+      - 具体的なディテール（生地、シルエット、年代の特徴など）に触れる
       - 文章の最後に必ず以下の2行を改行して入れる:
         #{price}
         #{url}
@@ -105,7 +117,8 @@ namespace :product do
       - ブランド名やモデル名のハッシュタグも含める
 
       【フォーマットのルール】
-      - 投稿全体（文章+価格+URL+ハッシュタグ）を280文字以内に厳守する。URLは長いので文章は短めにする
+      - URLはXで23文字に短縮される。文章+価格+23文字+ハッシュタグの合計が280文字以内になるようにする
+      - 文章部分は100文字以内を目安にする
       - 絵文字は使わない
       - 装飾記号（【】や■など）は最小限にする
       - 出力は投稿文のみ。説明や前置きは不要
