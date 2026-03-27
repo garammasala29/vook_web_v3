@@ -18,7 +18,7 @@
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-google-charts": "^5.2.1",
-    "sass": "^1.86.3",
+    "sass": "^1.93.2",
     "styled-components": "^6.1.17",
     "swr": "^2.3.3",
     "tributejs": "^5.1.3",
